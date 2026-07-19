@@ -1,0 +1,1706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>UZHAVAI (உழவை) — Monitor Smarter. Store Better. Sell First.</title>
+  <meta name="description" content="Real-time vegetable storage decision-support system for farmers. Prevent post-harvest losses with instant spoilage alerts.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Hind+Madurai:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'system-ui', 'sans-serif'],
+            tamil: ['Hind Madurai', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    };
+  </script>
+
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script>
+    Babel.registerPreset('react-classic', {
+      presets: [[Babel.availablePresets['react'], { runtime: 'classic' }]]
+    });
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    :root {
+      --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: linear-gradient(160deg, #f0fdf4 0%, #f8fafc 60%, #eff6ff 100%);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    .font-en { font-family: 'Outfit', system-ui, sans-serif; }
+    .font-ta { font-family: 'Hind Madurai', system-ui, sans-serif; line-height: 1.7; }
+
+    /* Scrollbars */
+    .scroll::-webkit-scrollbar { width: 4px; height: 4px; }
+    .scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); border-radius: 4px; }
+    .scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+    /* Animations */
+    @keyframes border-blink {
+      0%,100% { border-color: rgba(239,68,68,0.3); }
+      50%      { border-color: rgba(239,68,68,0.9); }
+    }
+    .blink-border { animation: border-blink 1.4s ease-in-out infinite; }
+
+    @keyframes slideUp {
+      from { opacity:0; transform:translateY(12px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .slide-up { animation: slideUp 0.3s ease-out both; }
+
+    @keyframes fadeIn {
+      from { opacity:0; } to { opacity:1; }
+    }
+    .fade-in { animation: fadeIn 0.4s ease-out both; }
+
+    @keyframes waveBounce {
+      0%,100% { transform: scaleY(0.2); }
+      50%      { transform: scaleY(1.2); }
+    }
+    .wave-bar { animation: waveBounce 0.75s ease-in-out infinite; transform-origin: bottom; }
+
+    @keyframes typingDot {
+      0%,60%,100% { transform:translateY(0); opacity:0.4; }
+      30%          { transform:translateY(-5px); opacity:1; }
+    }
+    .tdot { animation: typingDot 1.3s infinite; }
+    .tdot:nth-child(2) { animation-delay: 0.15s; }
+    .tdot:nth-child(3) { animation-delay: 0.30s; }
+
+    @keyframes pulseRing {
+      0%   { transform:scale(1);   opacity:1; }
+      100% { transform:scale(1.6); opacity:0; }
+    }
+    .pulse-ring::before {
+      content:''; position:absolute; inset:-4px; border-radius:50%;
+      background:rgba(239,68,68,0.3);
+      animation: pulseRing 1.4s cubic-bezier(0.4,0,0.6,1) infinite;
+    }
+
+    @keyframes shimmer {
+      0%   { background-position: -400px 0; }
+      100% { background-position:  400px 0; }
+    }
+    .shimmer {
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
+      background-size: 400px 100%;
+      animation: shimmer 2s infinite linear;
+    }
+
+    /* Card hover */
+    .card-lift { transition: transform 0.18s ease, box-shadow 0.18s ease; }
+    .card-lift:hover { transform: translateY(-3px); box-shadow: 0 20px 40px -8px rgba(0,0,0,0.12); }
+
+    /* Progress bar */
+    .prog { transition: width 0.7s cubic-bezier(0.4,0,0.2,1); }
+
+    /* Range inputs */
+    input[type=range] { -webkit-appearance:none; appearance:none; height:6px; border-radius:6px; outline:none; cursor:pointer; }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance:none; width:22px; height:22px; border-radius:50%;
+      background:white; border:2.5px solid #10b981;
+      box-shadow:0 2px 8px rgba(16,185,129,0.4); cursor:pointer;
+    }
+    input[type=range]:focus::-webkit-slider-thumb { border-color: #059669; }
+
+    /* Phone frame */
+    .phone-frame {
+      background: linear-gradient(145deg, #1a2035, #0c1120);
+      border-radius: 44px;
+      padding: 12px;
+      box-shadow: 0 0 0 1.5px #2a3350,
+                  0 30px 60px -15px rgba(0,0,0,0.5),
+                  inset 0 1px 0 rgba(255,255,255,0.06);
+    }
+
+    /* WA bubble tail */
+    .wa-tail { position:relative; }
+    .wa-tail::before {
+      content:''; position:absolute; top:0; left:-7px;
+      border:7px solid transparent;
+      border-top-color:#1e293b;
+      border-right-color:#1e293b;
+    }
+
+    /* Glassmorphism */
+    .glass {
+      background: rgba(255,255,255,0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+
+    /* Touch target baseline */
+    .touch-target { min-height: 44px; min-width: 44px; }
+
+    /* Voice speaking highlight */
+    @keyframes speakPulse {
+      0%,100% { opacity:1; }
+      50%      { opacity:0.5; }
+    }
+    .speak-pulse { animation: speakPulse 1.5s ease-in-out infinite; }
+
+    /* Mobile tap highlight */
+    * { -webkit-tap-highlight-color: transparent; }
+
+    /* No horizontal overflow */
+    .no-overflow { max-width: 100%; overflow-x: hidden; }
+
+    /* Responsive text */
+    .text-responsive { font-size: clamp(0.75rem, 3vw, 1rem); }
+    .heading-responsive { font-size: clamp(1rem, 4vw, 1.25rem); }
+
+    /* ---- SPLASH SCREEN ANIMATIONS ---- */
+    @keyframes revealUp {
+      0% { opacity: 0; transform: translateY(20px); filter: blur(10px); }
+      100% { opacity: 1; transform: translateY(0); filter: blur(0); }
+    }
+    @keyframes blurFadeIn {
+      0% { opacity: 0; filter: blur(8px); }
+      100% { opacity: 1; filter: blur(0); }
+    }
+    @keyframes particleFloat {
+      0% { transform: translateY(0) translateX(0); opacity: 0; }
+      50% { opacity: 0.6; }
+      100% { transform: translateY(-120px) translateX(30px); opacity: 0; }
+    }
+    @keyframes progressFill {
+      0% { width: 0%; }
+      100% { width: 100%; }
+    }
+    @keyframes premiumGlow {
+      0% { filter: drop-shadow(0 0 0 rgba(16, 185, 129, 0)); }
+      100% { filter: drop-shadow(0 0 35px rgba(16, 185, 129, 0.6)); }
+    }
+    @keyframes splashFadeOut {
+      0% { opacity: 1; }
+      100% { opacity: 0; pointer-events: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .splash-anim { animation: none !important; transition: opacity 0.5s !important; }
+    }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react-classic">
+  const { useState, useEffect, useRef, useCallback } = React;
+
+  /* ============================================================
+     DICTIONARY
+  ============================================================ */
+  const D = {
+    en: {
+      title:'UZHAVAI', badge:'MVP Demo', tagline:'Monitor Smarter. Store Better. Sell First.',
+      espLive:'ESP32 Live', day:'Day',
+      spinach:'Spinach', tomato:'Tomato', onion:'Onion',
+      safe:'Safe', sellSoon:'Sell Soon', sellToday:'Sell Today',
+      heroSubtitle:'Selling Priority — Live',
+      rank1:'#1 Critical', rank2:'#2 Priority', rank3:'#3 Safe',
+      remaining:'Remaining', days:'days', hours:'hrs',
+      idealLabel:'Ideal', deviationLabel:'Dev',
+      expiryDay:'Expiry Day', protectedLbl:'₹ Protected',
+      overviewTitle:'Storage Overview',
+      totalLbl:'Total', safeLbl:'Safe', warnLbl:'Warning', critLbl:'Critical',
+      priorityTitle:"Today's Selling Order", prioritySub:'Ranked by spoilage urgency',
+      zonesTitle:'Live Storage Zones',
+      tempLbl:'Temperature', humidLbl:'Humidity', shelfLbl:'Shelf Life',
+      storedOnLbl:'Stored Day', storedAtLbl:'Time', profitLabel:'Protected',
+      whyLbl:'Why this recommendation?',
+      impactTitle:'Farmer Impact',
+      profitSaved:'Profit Saved', wasteKg:'Waste Prevented', incomePct:'Income Up', co2:'CO₂ Saved',
+      whyTitle:'Why UZHAVAI?', withoutTitle:'Without UZHAVAI', withTitle:'With UZHAVAI',
+      hwTitle:'Hardware Architecture',
+      impactStatTitle:'UZHAVAI Impact', phLoss:'Post-Harvest Loss', savings:'Farmer Savings',
+      monitoring:'Monitoring', offline:'Offline Ready', offlineBadge:'OFFLINE READY',
+      offlineNote:'Works on Local WiFi only — No internet required',
+      historyTitle:'Storage History',
+      hVeg:'Vegetable', hDate:'Stored Day', hTime:'Time', hZone:'Zone', hStatus:'Status', hLife:'Shelf Life',
+      simTitle:'Live Simulation Panel', simSub:'Interactive demo for judges & investors',
+      timeTravel:'Time Travel', storyMode:'Demo Story Mode',
+      startDemo:'▶  Start Demo', pauseDemo:'⏸  Pause', resetDemo:'↺  Reset',
+      stepLabel:'Step', playing:'Auto-Playing', idle:'Idle',
+      sensorsTitle:'Sensor Controls',
+      zA:'Zone A — Spinach Humidity', zB:'Zone B — Tomato Temperature', zC:'Zone C — Onion Humidity',
+      restockTitle:'Restock Zones', restockBtn:'Restock',
+      phoneHeader:'Farmer Notification Center',
+      waTab:'WhatsApp', smsTab:'SMS', voiceTab:'Voice',
+      waOnline:'online',
+      waWelcome:"Hello! I'm monitoring your 3 storage zones 24/7. I'll alert you instantly when any vegetable needs attention.",
+      smsWelcome:'UZHAVAI monitoring active. You will receive SMS alerts when action is needed.',
+      voiceReady:'Voice Alert System', voiceNote:'Browser Speech API',
+      voicePlay:'Play Alert', voicePause:'Pause', voiceResume:'Resume', voiceStop:'Stop', voiceReplay:'Replay',
+      voiceStatus_idle:'Ready', voiceStatus_speaking:'Speaking', voiceStatus_paused:'Paused',
+      voiceLang:'Language', voiceName:'Voice', voiceDuration:'Est. Duration',
+      voiceNoTamil:'Tamil voice unavailable — using system default',
+      transcript:'Transcript',
+    },
+    ta: {
+      title:'உழவை', badge:'முன்மாதிரி', tagline:'சிறப்பாகக் கண்காணி. மேலாகச் சேமி. முதலில் விற்கவும்.',
+      espLive:'ESP32 இயக்கத்தில்', day:'நாள்',
+      spinach:'கீரை', tomato:'தக்காளி', onion:'வெங்காயம்',
+      safe:'பாதுகாப்பு', sellSoon:'விரைவில் விற்க', sellToday:'இன்றே விற்க',
+      heroSubtitle:'விற்பனை முன்னுரிமை — நேரடி',
+      rank1:'#1 அவசரம்', rank2:'#2 முன்னுரிமை', rank3:'#3 பாதுகாப்பு',
+      remaining:'மீதம்', days:'நாட்கள்', hours:'மணி',
+      idealLabel:'சிறந்தது', deviationLabel:'வேறுபாடு',
+      expiryDay:'காலாவதி நாள்', protectedLbl:'₹ பாதுகாப்பு',
+      overviewTitle:'சேமிப்பு நிலவரம்',
+      totalLbl:'மொத்தம்', safeLbl:'பாதுகாப்பு', warnLbl:'எச்சரிக்கை', critLbl:'அவசரம்',
+      priorityTitle:'இன்றைய விற்பனை வரிசை', prioritySub:'அழுகும் அபாயம் வரிசை',
+      zonesTitle:'நேரடி சேமிப்பு பகுதிகள்',
+      tempLbl:'வெப்பநிலை', humidLbl:'ஈரப்பதம்', shelfLbl:'ஆயுட்காலம்',
+      storedOnLbl:'சேமித்த நாள்', storedAtLbl:'நேரம்', profitLabel:'பாதுகாக்கப்பட்டது',
+      whyLbl:'ஏன் இந்த பரிந்துரை?',
+      impactTitle:'விவசாயி தாக்கம்',
+      profitSaved:'சேமிக்கப்பட்ட லாபம்', wasteKg:'கழிவு குறைப்பு', incomePct:'வருமான அதிகரிப்பு', co2:'CO₂ குறைப்பு',
+      whyTitle:'ஏன் உழவை?', withoutTitle:'உழவை இல்லாமல்', withTitle:'உழவையுடன்',
+      hwTitle:'வன்பொருள் கட்டமைப்பு',
+      impactStatTitle:'உழவை தாக்கம்', phLoss:'அறுவடை இழப்பு குறைப்பு', savings:'விவசாயி சேமிப்பு',
+      monitoring:'கண்காணிப்பு', offline:'ஆஃப்லைன் தயார்', offlineBadge:'ஆஃப்லைன் தயார்',
+      offlineNote:'உள்ளூர் வைஃபை மட்டும் — இணையம் தேவையில்லை',
+      historyTitle:'சேமிப்பு வரலாறு',
+      hVeg:'காய்கறி', hDate:'சேமித்த நாள்', hTime:'நேரம்', hZone:'பகுதி', hStatus:'நிலை', hLife:'ஆயுட்காலம்',
+      simTitle:'நேரடி கட்டுப்பாட்டு வாரியம்', simSub:'நடுவர்கள் மற்றும் முதலீட்டாளர்களுக்கான டெமோ',
+      timeTravel:'காலப் பயணம்', storyMode:'டெமோ கதை முறை',
+      startDemo:'▶  டெமோ தொடங்கு', pauseDemo:'⏸  நிறுத்து', resetDemo:'↺  மீட்டமை',
+      stepLabel:'படி', playing:'தானியங்கி', idle:'நிறுத்தம்',
+      sensorsTitle:'சென்சார் கட்டுப்பாடுகள்',
+      zA:'பகுதி A — கீரை ஈரப்பதம்', zB:'பகுதி B — தக்காளி வெப்பநிலை', zC:'பகுதி C — வெங்காயம் ஈரப்பதம்',
+      restockTitle:'மறுசேமிப்பு', restockBtn:'சேமி',
+      phoneHeader:'விவசாயி அறிவிப்பு மையம்',
+      waTab:'வாட்ஸ்அப்', smsTab:'SMS', voiceTab:'குரல்',
+      waOnline:'இணைந்துள்ளது',
+      waWelcome:'வணக்கம்! உங்கள் 3 சேமிப்பு பகுதிகளை 24/7 கண்காணிக்கிறேன். நிலை மாறும்போது உடனடியாக அறிவிக்கிறேன்.',
+      smsWelcome:'உழவை கண்காணிப்பு செயலில். நடவடிக்கை தேவைப்படும்போது SMS அறிவிப்பு வரும்.',
+      voiceReady:'குரல் எச்சரிக்கை அமைப்பு', voiceNote:'உலாவி குரல் தொழில்நுட்பம்',
+      voicePlay:'அறிவிப்பு கேட்க', voicePause:'நிறுத்து', voiceResume:'தொடர்', voiceStop:'நிறுத்து', voiceReplay:'மீண்டும் கேட்க',
+      voiceStatus_idle:'தயார்', voiceStatus_speaking:'பேசுகிறது', voiceStatus_paused:'இடைநிறுத்தம்',
+      voiceLang:'மொழி', voiceName:'குரல்', voiceDuration:'கால அவகாசம்',
+      voiceNoTamil:'தமிழ் குரல் கிடைக்கவில்லை — இயல்புநிலை குரல் பயன்படுத்தப்படுகிறது',
+      transcript:'குரல் உரை',
+    }
+  };
+
+  /* ============================================================
+     ICONS
+  ============================================================ */
+  function Icon({ name, className = 'w-5 h-5' }) {
+    const icons = {
+      leaf:        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 3.5 1 8.8C19.8 17 17 20 11 20z"/><path d="M19 2c-2.26 4.33-5.27 7.14-8 10"/></svg>,
+      circle:      <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 5c0-2 1-3 1-3s-2 1-2 3"/><path d="M10 5c-1-1.5-3-1-3-1s1.5 1.5 3 1"/><path d="M14 5c1-1.5 3-1 3-1s-1.5 1.5-3 1"/></svg>,
+      layers:      <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>,
+      thermometer: <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>,
+      droplets:    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.09 3 12.25c0 2.22 1.8 4.05 4 4.05z"/><path d="M12.56 6.6A10.97 10.97 0 0 0 14 3.02c.5 2.5 2 4.9 4 6.5s3 3.5 3 5.5a6.98 6.98 0 0 1-11.91 4.97"/></svg>,
+      cpu:         <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="15" x2="23" y2="15"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="15" x2="4" y2="15"/></svg>,
+      monitor:     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>,
+      bell:        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>,
+      alert:       <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
+      history:     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><polyline points="3 3 3 8 8 8"/><line x1="12" y1="7" x2="12" y2="12"/><line x1="12" y1="12" x2="16" y2="14"/></svg>,
+      dashboard:   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>,
+      wifi:        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>,
+      check:       <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
+      play:        <svg className={className} viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>,
+      pause:       <svg className={className} viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>,
+      stop:        <svg className={className} viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>,
+      refresh:     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><polyline points="3 3 3 8 8 8"/></svg>,
+      mic:         <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>,
+      arrowR:      <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>,
+    };
+    return icons[name] || null;
+  }
+
+  /* ============================================================
+     SPLASH SCREEN
+  ============================================================ */
+  function SplashScreen({ onComplete }) {
+    const [msgIndex, setMsgIndex] = useState(0);
+    const [isComplete, setIsComplete] = useState(false);
+    const [isFadingOut, setIsFadingOut] = useState(false);
+    
+    const messages = [
+      "Initializing Smart Storage...",
+      "Connecting Edge Controller...",
+      "Initializing ESP32...",
+      "Reading Storage Sensors...",
+      "Analyzing Shelf Life...",
+      "Generating Farmer Recommendations...",
+      "Preparing Dashboard...",
+      "System Ready"
+    ];
+
+    useEffect(() => {
+      // 2.5s total duration. Messages cycle over ~1.8s.
+      // Message changes every ~250ms
+      const interval = setInterval(() => {
+        setMsgIndex(prev => {
+          if (prev >= messages.length - 2) {
+            clearInterval(interval);
+            setTimeout(() => setMsgIndex(messages.length - 1), 200); // System Ready
+            return prev + 1;
+          }
+          return prev + 1;
+        });
+      }, 250);
+
+      const completeTimer = setTimeout(() => {
+        setIsComplete(true);
+      }, 2100); // Glow kicks in at 2.1s
+
+      const fadeTimer = setTimeout(() => {
+        setIsFadingOut(true);
+      }, 2500); // Start fade out at 2.5s
+
+      const unmountTimer = setTimeout(() => {
+        onComplete();
+      }, 3000); // Fully remove from DOM
+
+      return () => {
+        clearInterval(interval);
+        clearTimeout(completeTimer);
+        clearTimeout(fadeTimer);
+        clearTimeout(unmountTimer);
+      };
+    }, []);
+
+    // Particles array for background
+    const particles = Array.from({ length: 15 }).map((_, i) => ({
+      id: i,
+      left: Math.random() * 100 + '%',
+      top: Math.random() * 100 + '%',
+      size: Math.random() * 6 + 2 + 'px',
+      delay: Math.random() * 2 + 's',
+      duration: Math.random() * 3 + 4 + 's'
+    }));
+
+    return (
+      <div class={`fixed inset-0 z-[9999] bg-gradient-to-br from-slate-900 via-[#0a1120] to-slate-900 flex flex-col items-center justify-center overflow-hidden transition-opacity duration-500 ${isFadingOut ? 'opacity-0' : 'opacity-100'}`}>
+        
+        {/* Background particles */}
+        <div class="absolute inset-0 overflow-hidden pointer-events-none opacity-40">
+          {particles.map(p => (
+            <div key={p.id} class="absolute rounded-full bg-emerald-500/20 blur-[1px]" 
+                 style={{
+                   left: p.left, top: p.top, width: p.size, height: p.size,
+                   animation: `particleFloat ${p.duration} linear infinite`,
+                   animationDelay: p.delay
+                 }}
+            />
+          ))}
+          {/* Subtle gradient orb */}
+          <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-900/20 rounded-full blur-[100px] pointer-events-none"></div>
+        </div>
+
+        {/* Center Content */}
+        <div class="relative z-10 flex flex-col items-center text-center">
+          
+          {/* Logo & Titles */}
+          <div class="mb-10 flex flex-col items-center">
+            <div class="text-6xl mb-4 splash-anim" style={{ animation: 'revealUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards', animationDelay: '0.1s', opacity: 0 }}>
+              <span class="inline-block transition-all duration-700" style={{ filter: isComplete ? 'drop-shadow(0 0 25px rgba(16, 185, 129, 0.6))' : 'none' }}>
+                🌾
+              </span>
+            </div>
+            <h1 class="text-4xl sm:text-5xl font-black text-white tracking-tight splash-anim" style={{ animation: 'blurFadeIn 0.8s ease-out forwards', animationDelay: '0.4s', opacity: 0 }}>
+              UZHAVAI
+            </h1>
+            <h2 class="text-2xl sm:text-3xl font-ta text-emerald-400 mt-1 splash-anim" style={{ animation: 'blurFadeIn 0.8s ease-out forwards', animationDelay: '0.7s', opacity: 0 }}>
+              உழவை
+            </h2>
+          </div>
+
+          {/* Tagline sequence */}
+          <div class="flex gap-2 text-sm sm:text-base font-bold text-slate-400 mb-12">
+            <span class="splash-anim" style={{ animation: 'blurFadeIn 0.6s forwards', animationDelay: '1.0s', opacity: 0 }}>Monitor Smarter.</span>
+            <span class="splash-anim" style={{ animation: 'blurFadeIn 0.6s forwards', animationDelay: '1.3s', opacity: 0 }}>Store Better.</span>
+            <span class="text-emerald-400 splash-anim" style={{ animation: 'blurFadeIn 0.6s forwards', animationDelay: '1.6s', opacity: 0 }}>Sell First.</span>
+          </div>
+
+          {/* Loading Bar & Messages */}
+          <div class="w-64 max-w-full px-4 splash-anim" style={{ animation: 'blurFadeIn 0.5s forwards', animationDelay: '0.5s', opacity: 0 }}>
+            <div class="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden mb-3 relative">
+              <div class="absolute top-0 left-0 h-full bg-gradient-to-r from-emerald-500 to-emerald-300 rounded-full splash-anim" 
+                   style={{ width: '0%', animation: 'progressFill 1.8s cubic-bezier(0.4, 0, 0.2, 1) forwards', animationDelay: '0.5s' }}>
+              </div>
+            </div>
+            <div class="h-4 relative overflow-hidden">
+              {messages.map((msg, idx) => (
+                <div key={idx} 
+                     class={`absolute inset-0 text-[10px] sm:text-xs font-semibold tracking-wider uppercase transition-all duration-300 ${msgIndex === idx ? 'opacity-100 translate-y-0 text-slate-300' : msgIndex > idx ? 'opacity-0 -translate-y-4 text-emerald-400' : 'opacity-0 translate-y-4 text-slate-500'}`}>
+                  {msg}
+                </div>
+              ))}
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    );
+  }
+
+  /* ============================================================
+     APP
+  ============================================================ */
+  function App() {
+    const [showSplash, setShowSplash] = useState(() => {
+      // Return true only if it's the first load in the session
+      return !sessionStorage.getItem('uzhavai_splashed');
+    });
+
+    const handleSplashComplete = () => {
+      sessionStorage.setItem('uzhavai_splashed', 'true');
+      setShowSplash(false);
+    };
+
+    const [lang, setLang]             = useState('en');
+    const [currentDay, setCurrentDay] = useState(1);
+    const [phoneTab, setPhoneTab]     = useState('whatsapp');
+    const [demoMode, setDemoMode]     = useState(false);
+    const [demoStep, setDemoStep]     = useState(0);
+    const [notifs, setNotifs]         = useState([]);
+    const [showTyping, setShowTyping] = useState(false);
+    const [restockCount, setRestockCount] = useState(0);
+    const [history, setHistory]       = useState([
+      { id:'h1', cropEn:'Spinach', cropTa:'கீரை',     storedDay:1, storedTime:'08:00 AM', zone:'Zone A', status:'Safe', shelfLife:'3 Days' },
+      { id:'h2', cropEn:'Tomato',  cropTa:'தக்காளி',  storedDay:1, storedTime:'09:30 AM', zone:'Zone B', status:'Safe', shelfLife:'7 Days' },
+      { id:'h3', cropEn:'Onion',   cropTa:'வெங்காயம்',storedDay:1, storedTime:'10:00 AM', zone:'Zone C', status:'Safe', shelfLife:'30 Days' },
+    ]);
+
+    // Voice state
+    const [voiceStatus, setVoiceStatus] = useState('idle'); // idle | speaking | paused
+    const [voices, setVoices]           = useState({ ta: null, en: null });
+    const [hasSpoken, setHasSpoken]     = useState(false);
+    const utterRef  = useRef(null);
+    const demoRef   = useRef(null);
+    const prevStatus = useRef({});
+
+    const t     = k => D[lang]?.[k] ?? D.en?.[k] ?? k;
+    const cname = z => lang === 'ta' ? z.cropTa    : z.cropEn;
+    const zdesc = z => lang === 'ta' ? z.zoneDescTa : z.zoneDescEn;
+
+    /* ---- INIT ZONES ---- */
+    const INIT = [
+      {
+        id:'zoneA', cropEn:'Spinach', cropTa:'கீரை', emoji:'🥬', icon:'leaf',
+        zoneName:'Zone A', zoneDescEn:'High Humidity', zoneDescTa:'உயர் ஈரப்பதம்',
+        iconBg:'bg-emerald-100', iconTx:'text-emerald-700',
+        idealTemp:22, idealHumidity:85, minHumidity:70, maxTemp:28, maxHumidity:null,
+        baseShelfLife:3, degradationFactor:0.4,
+        temperature:22, humidity:85, storedDay:1, storedTime:'08:00 AM',
+        pricePerKg:40, kgStored:10.5,
+      },
+      {
+        id:'zoneB', cropEn:'Tomato', cropTa:'தக்காளி', emoji:'🍅', icon:'circle',
+        zoneName:'Zone B', zoneDescEn:'Medium Humidity', zoneDescTa:'மிதமான ஈரப்பதம்',
+        iconBg:'bg-red-100', iconTx:'text-red-600',
+        idealTemp:18, idealHumidity:70, minHumidity:50, maxTemp:30, maxHumidity:null,
+        baseShelfLife:7, degradationFactor:0.2,
+        temperature:18, humidity:70, storedDay:1, storedTime:'09:30 AM',
+        pricePerKg:25, kgStored:15,
+      },
+      {
+        id:'zoneC', cropEn:'Onion', cropTa:'வெங்காயம்', emoji:'🧅', icon:'layers',
+        zoneName:'Zone C', zoneDescEn:'Dry Storage', zoneDescTa:'உலர் சேமிப்பு',
+        iconBg:'bg-purple-100', iconTx:'text-purple-700',
+        idealTemp:20, idealHumidity:50, minHumidity:30, maxTemp:35, maxHumidity:60,
+        baseShelfLife:30, degradationFactor:0.1,
+        temperature:20, humidity:50, storedDay:1, storedTime:'10:00 AM',
+        pricePerKg:30, kgStored:20,
+      }
+    ];
+    const [zones, setZones] = useState(INIT);
+
+    /* ---- SIMULATION ENGINE ---- */
+    const calcZone = (z, day) => {
+      const duration = Math.max(0, day - z.storedDay);
+      let penalty = 0;
+      const issues = [];
+      if (z.minHumidity && z.humidity < z.minHumidity) {
+        penalty += 1;
+        issues.push({ en:`Humidity ${z.humidity}% below minimum ${z.minHumidity}%.`, ta:`ஈரப்பதம் குறைந்தது — ${z.humidity}% (குறைந்தபட்சம் ${z.minHumidity}%).` });
+      }
+      if (z.maxHumidity && z.humidity > z.maxHumidity) {
+        penalty += 5;
+        issues.push({ en:`Humidity ${z.humidity}% exceeds maximum ${z.maxHumidity}%.`, ta:`ஈரப்பதம் அதிகம் — ${z.humidity}% (அதிகபட்சம் ${z.maxHumidity}%).` });
+      }
+      if (z.maxTemp && z.temperature > z.maxTemp) {
+        const ex = z.temperature - z.maxTemp;
+        penalty += Math.min(ex * 0.5, 3);
+        issues.push({ en:`Temperature ${z.temperature}°C exceeds threshold ${z.maxTemp}°C.`, ta:`வெப்பநிலை அதிகம் — ${z.temperature}°C (வரம்பு ${z.maxTemp}°C).` });
+      }
+      const remaining = parseFloat(Math.max(0, z.baseShelfLife - duration * z.degradationFactor - penalty).toFixed(2));
+      const pct = Math.min(100, Math.max(0, (remaining / z.baseShelfLife) * 100));
+
+      let status, badgeCls, borderCls, progColor, textCls;
+      if (pct < 10) {
+        status='Sell Today';
+        badgeCls='bg-red-100 text-red-800 border-red-300 animate-pulse';
+        borderCls='border-red-200 blink-border bg-red-50/20';
+        progColor='bg-gradient-to-r from-red-500 to-red-600';
+        textCls='text-red-600 font-bold';
+      } else if (pct <= 40) {
+        status='Sell Soon';
+        badgeCls='bg-amber-100 text-amber-800 border-amber-200';
+        borderCls='border-amber-200 bg-amber-50/20';
+        progColor='bg-gradient-to-r from-amber-400 to-orange-500';
+        textCls='text-amber-600 font-semibold';
+      } else {
+        status='Safe';
+        badgeCls='bg-emerald-100 text-emerald-800 border-emerald-200';
+        borderCls='border-slate-100 bg-white';
+        progColor='bg-gradient-to-r from-emerald-400 to-emerald-500';
+        textCls='text-emerald-600';
+      }
+
+      let reasonEn = `${z.cropEn} stored for ${duration} day(s). `;
+      let reasonTa = `${z.cropTa} ${duration} நாட்களாகச் சேமிப்பில் உள்ளது. `;
+      if (issues.length) {
+        reasonEn += issues.map(i => i.en).join(' ') + ' Spoilage is accelerating.';
+        reasonTa += issues.map(i => i.ta).join(' ') + ' அழுகும் வேகம் அதிகரித்தது.';
+      } else {
+        reasonEn += 'Storage conditions are optimal.';
+        reasonTa += 'சேமிப்பு சூழல் சிறப்பாக உள்ளது.';
+      }
+      if (status === 'Sell Today') {
+        reasonEn += ' Sell immediately to avoid post-harvest loss.';
+        reasonTa += ' இழப்பைத் தவிர்க்க உடனே விற்கவும்.';
+      } else if (status === 'Sell Soon') {
+        reasonEn += ' Plan to sell within 1–2 days for the best price.';
+        reasonTa += ' சிறந்த விலைக்கு 1–2 நாட்களில் விற்க திட்டமிடுங்கள்.';
+      } else {
+        reasonEn += ' Safe to continue storing under current conditions.';
+        reasonTa += ' தற்போதைய சூழலில் தொடர்ந்து சேமிக்கலாம்.';
+      }
+
+      const profitProtected = Math.round(z.kgStored * z.pricePerKg * (pct / 100));
+      const tempDev = +(z.temperature - z.idealTemp).toFixed(1);
+      const humDev  = +(z.humidity   - z.idealHumidity).toFixed(0);
+
+      return { ...z, remaining, pct, status, badgeCls, borderCls, progColor, textCls, reasonEn, reasonTa, profitProtected, tempDev, humDev, duration };
+    };
+
+    /* ---- DERIVED STATE ---- */
+    const liveZones   = zones.map(z => calcZone(z, currentDay));
+    const statusOrder = { 'Sell Today':0, 'Sell Soon':1, 'Safe':2 };
+    const sellOrder   = [...liveZones].sort((a,b) => statusOrder[a.status] - statusOrder[b.status] || a.remaining - b.remaining);
+    const mostUrgent  = sellOrder[0];
+    const counts      = liveZones.reduce((a,z) => {
+      if (z.status==='Safe') a.safe++; else if (z.status==='Sell Soon') a.warn++; else a.crit++;
+      return a;
+    }, { safe:0, warn:0, crit:0 });
+
+    /* ---- IMPACT METRICS ---- */
+    const profitSaved  = liveZones.reduce((s,z) => s + (z.status!=='Safe' ? z.profitProtected : Math.round(z.kgStored*z.pricePerKg*0.12)), 0) + restockCount*420 + (currentDay-1)*75;
+    const wasteKgNum   = parseFloat((liveZones.reduce((s,z) => s + (z.status==='Sell Today'?z.kgStored*0.28:z.status==='Sell Soon'?z.kgStored*0.09:z.kgStored*0.015), 0) + restockCount*1.8 + (currentDay-1)*0.25).toFixed(1));
+    const incomePctNum = Math.min(48, 10 + Math.floor(currentDay*0.75) + restockCount*4);
+    const co2Num       = parseFloat((wasteKgNum * 2.5).toFixed(1));
+
+    /* ---- FORMATTERS ---- */
+    const fmtRemaining  = r => r >= 1 ? `${parseFloat(r.toFixed(1))} ${t('days')}` : `${Math.round(r*24)} ${t('hours')}`;
+    const statusLabel   = s => s==='Safe' ? t('safe') : s==='Sell Soon' ? t('sellSoon') : t('sellToday');
+    const rankLabel     = i => i===0 ? t('rank1') : i===1 ? t('rank2') : t('rank3');
+
+    /* ---- HERO CARD STYLES ---- */
+    const heroStyle = {
+      'Sell Today': { bg:'from-red-500 via-red-600 to-red-700',   border:'border-red-400/30',   shadow:'shadow-red-500/40',   badge:'bg-red-950/50 text-red-100 border-red-700/40',     bar:'bg-white/60' },
+      'Sell Soon':  { bg:'from-amber-500 to-orange-600',          border:'border-amber-400/30', shadow:'shadow-amber-500/30', badge:'bg-amber-950/50 text-amber-100 border-amber-700/40', bar:'bg-white/60' },
+      'Safe':       { bg:'from-emerald-500 to-emerald-700',       border:'border-emerald-400/30',shadow:'shadow-emerald-500/30',badge:'bg-emerald-950/50 text-emerald-100 border-emerald-700/40',bar:'bg-white/60' },
+    };
+
+    /* ---- VOICE DETECTION ---- */
+    useEffect(() => {
+      const detect = () => {
+        if (!window.speechSynthesis) return;
+        const all = window.speechSynthesis.getVoices();
+        if (!all.length) return;
+        const ta = all.find(v => v.lang === 'ta-IN' && v.name.includes('Google'))
+                || all.find(v => v.lang === 'ta-IN')
+                || all.find(v => v.lang.startsWith('ta'))
+                || all.find(v => v.name.toLowerCase().includes('tamil'));
+        const en = all.find(v => v.lang === 'en-IN' && v.name.includes('Google'))
+                || all.find(v => v.lang === 'en-IN')
+                || all.find(v => v.name.toLowerCase().includes('india') && v.lang.startsWith('en'))
+                || all.find(v => v.lang === 'en-GB')
+                || all.find(v => v.lang.startsWith('en'));
+        setVoices({ ta, en });
+      };
+      detect();
+      if (window.speechSynthesis) {
+        window.speechSynthesis.onvoiceschanged = detect;
+        return () => { window.speechSynthesis.onvoiceschanged = null; };
+      }
+    }, []);
+
+    /* ---- NOTIFICATIONS ENGINE ---- */
+    useEffect(() => {
+      const newN = [];
+      liveZones.forEach(z => {
+        const prev = prevStatus.current[z.id] || 'Safe';
+        if (prev === z.status) return;
+        const timeStr = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+        const income  = Math.round(z.kgStored * z.pricePerKg * (z.pct/100));
+        const tLeft   = fmtRemaining(z.remaining);
+        if (z.status === 'Sell Soon') {
+          newN.push({ id:Date.now()+Math.random(), type:'whatsapp', emoji:z.emoji, status:z.status, time:timeStr,
+            en:`⚠️ *${z.cropEn} — ${z.zoneName}*\nApproaching spoilage. Sell within 2 days.\nIncome at risk: ₹${income}`,
+            ta:`⚠️ *${z.cropTa} — ${z.zoneName}*\nஅழுகும் நிலை நெருங்குகிறது. 2 நாட்களில் விற்கவும்.\nஆபத்தில் உள்ள வருமானம்: ₹${income}` });
+          newN.push({ id:Date.now()+Math.random()+1, type:'sms', time:timeStr,
+            en:`UZHAVAI: ${z.cropEn} (${z.zoneName}) SELL SOON. Loss risk increasing. Act within 48 hrs.`,
+            ta:`உழவை: ${z.cropTa} (${z.zoneName}) விரைவில் விற்க. 48 மணி நேரத்தில் நடவடிக்கை எடுக்கவும்.` });
+        } else if (z.status === 'Sell Today') {
+          newN.push({ id:Date.now()+Math.random(), type:'whatsapp', emoji:z.emoji, status:z.status, time:timeStr,
+            en:`🔴 *SELL TODAY — ${z.cropEn}*\n${z.zoneName} · ${tLeft} remaining\nIncome saved if sold now: ₹${income}\nPost-harvest loss risk: HIGH`,
+            ta:`🔴 *இன்றே விற்கவும் — ${z.cropTa}*\n${z.zoneName} · ${tLeft} மீதம்\nவிற்றால் பாதுகாக்கப்படும்: ₹${income}\nஇழப்பு அபாயம்: அதிகம்` });
+          newN.push({ id:Date.now()+Math.random()+1, type:'sms', time:timeStr,
+            en:`CRITICAL: Sell ${z.cropEn} (${z.zoneName}) TODAY. Income at risk: ₹${income}. Post-harvest loss imminent.`,
+            ta:`அவசரம்: ${z.cropTa} (${z.zoneName}) இன்றே விற்கவும். ₹${income} ஆபத்தில். இழப்பு நெருங்குகிறது.` });
+        }
+        prevStatus.current[z.id] = z.status;
+      });
+      if (newN.length) {
+        setNotifs(p => [...newN, ...p]);
+        setShowTyping(true);
+        setTimeout(() => setShowTyping(false), 2800);
+      }
+    }, [liveZones.map(z=>`${z.id}:${z.status}`).join(',')]);
+
+    /* ---- DEMO STORY ---- */
+    const STORY = [
+      { titleEn:'🌾 Harvest Day', titleTa:'🌾 அறுவடை நாள்',
+        textEn:'Day 1: All crops freshly harvested and stored at optimal conditions. All zones are safe.',
+        textTa:'நாள் 1: அனைத்துக் காய்கறிகளும் சேமிக்கப்பட்டன. அனைத்து பகுதிகளும் சிறப்பான நிலையில்.',
+        action:() => { setCurrentDay(1); setZones(INIT); } },
+      { titleEn:'🌡️ Humidity Drops', titleTa:'🌡️ ஈரப்பதம் குறைகிறது',
+        textEn:'Day 2: Zone A humidity drops to 68% — below Spinach\'s safe threshold. Shelf life begins declining.',
+        textTa:'நாள் 2: பகுதி A ஈரப்பதம் 68%க்கு குறைகிறது. கீரையின் ஆயுள் வேகமாக குறைகிறது.',
+        action:() => { setCurrentDay(2); setZones(p => p.map(z => z.id==='zoneA' ? {...z,humidity:68} : z)); } },
+      { titleEn:'⚠️ Spinach — Sell Soon', titleTa:'⚠️ கீரை எச்சரிக்கை',
+        textEn:'Day 3: Spinach hits "Sell Soon" status. WhatsApp & SMS alerts sent to farmer automatically.',
+        textTa:'நாள் 3: கீரை "விரைவில் விற்க" நிலையை அடைகிறது. வாட்ஸ்அப் & SMS அறிவிப்புகள் அனுப்பப்படுகின்றன.',
+        action:() => { setCurrentDay(3); setZones(p => p.map(z => z.id==='zoneA' ? {...z,humidity:68} : z)); } },
+      { titleEn:'🚨 Spinach — Sell TODAY', titleTa:'🚨 கீரை — இன்றே விற்க',
+        textEn:'Day 4: CRITICAL — Spinach shelf life nearly zero. Hero banner shows red alert. Priority ranking reorders.',
+        textTa:'நாள் 4: அவசரம் — கீரை ஆயுள் பூஜ்யத்தை நெருங்குகிறது. முன்னுரிமை பட்டியல் மாறுகிறது.',
+        action:() => { setCurrentDay(4); setZones(p => p.map(z => z.id==='zoneA' ? {...z,humidity:65} : z)); } },
+      { titleEn:'💰 Farmer Sells & Restocks', titleTa:'💰 விவசாயி விற்கிறார் & மறுசேமிப்பு',
+        textEn:'Day 5: Farmer sells Spinach on time — profit protected! Zone A restocked with fresh batch. UZHAVAI saved ₹420.',
+        textTa:'நாள் 5: விவசாயி கீரை விற்கிறார் — லாபம் பாதுகாக்கப்பட்டது! உழவை ₹420 காப்பாற்றியது.',
+        action:() => {
+          const ts = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+          setCurrentDay(5);
+          setZones(p => p.map(z => z.id==='zoneA' ? {...INIT[0], storedDay:5, storedTime:ts} : z));
+          setRestockCount(c => c+1);
+          prevStatus.current['zoneA'] = 'Safe';
+        }
+      },
+      { titleEn:'🍅 Tomato Warning', titleTa:'🍅 தக்காளி எச்சரிக்கை',
+        textEn:'Day 7: Summer heat — Zone B temperature rises to 32°C, exceeding 30°C threshold. Tomato shelf life drops.',
+        textTa:'நாள் 7: கோடை வெப்பம் — பகுதி B வெப்பநிலை 32°C. வரம்பு 30°C மீறப்பட்டது.',
+        action:() => { setCurrentDay(7); setZones(p => p.map(z => z.id==='zoneB' ? {...z,temperature:32} : z)); } },
+      { titleEn:'📊 Full Priority Ranking', titleTa:'📊 முழு முன்னுரிமை பட்டியல்',
+        textEn:'Day 8: Tomato reaches "Sell Today". Onion remains safe. UZHAVAI\'s dynamic ranking tells the full story.',
+        textTa:'நாள் 8: தக்காளி "இன்றே விற்க" நிலையில். வெங்காயம் பாதுகாப்பானது. உழவையின் மாறும் வரிசை கதையை காட்டுகிறது.',
+        action:() => { setCurrentDay(8); setZones(p => p.map(z => z.id==='zoneB' ? {...z,temperature:35} : z)); } },
+    ];
+
+    useEffect(() => {
+      if (!demoMode) { if (demoRef.current) clearInterval(demoRef.current); return; }
+      STORY[demoStep].action();
+      demoRef.current = setInterval(() => {
+        setDemoStep(p => {
+          const next = p + 1;
+          if (next >= STORY.length) { clearInterval(demoRef.current); setDemoMode(false); return p; }
+          STORY[next].action();
+          return next;
+        });
+      }, 5000);
+      return () => { if (demoRef.current) clearInterval(demoRef.current); };
+    }, [demoMode, demoStep]);
+
+    /* ---- HANDLERS ---- */
+    const handleRestock = (zoneId) => {
+      const ts = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+      const z  = zones.find(z => z.id === zoneId);
+      setZones(p => p.map(zn => zn.id===zoneId ? {...zn, storedDay:currentDay, storedTime:ts, temperature:zn.idealTemp, humidity:zn.idealHumidity} : zn));
+      prevStatus.current[zoneId] = 'Safe';
+      const income = Math.round(z.kgStored * z.pricePerKg);
+      setNotifs(p => [{ id:Date.now(), type:'whatsapp', emoji:z.emoji, status:'Safe', time:ts, isRestock:true,
+        en:`✅ *${z.cropEn} Restocked — ${z.zoneName}*\nDay ${currentDay} · Fresh batch stored\nFull shelf life restored · ₹${income} protected`,
+        ta:`✅ *${z.cropTa} மறுசேமிப்பு — ${z.zoneName}*\nநாள் ${currentDay} · புதிய தொகுதி\nஆயுட்காலம் மீட்டமை · ₹${income} பாதுகாப்பு`,
+      }, ...p]);
+      setHistory(p => [{ id:Date.now().toString(), cropEn:z.cropEn, cropTa:z.cropTa, storedDay:currentDay, storedTime:ts, zone:z.zoneName, status:'Safe', shelfLife:`${z.baseShelfLife} Days` }, ...p]);
+      setRestockCount(c => c+1);
+    };
+
+    const startDemo = () => { setDemoStep(0); setDemoMode(true); };
+    const pauseDemo = () => setDemoMode(false);
+    const resetDemo = () => { setDemoMode(false); setDemoStep(0); setCurrentDay(1); setZones(INIT); setNotifs([]); setRestockCount(0); prevStatus.current = {}; };
+
+    /* ---- VOICE TEXT (improved Tamil) ---- */
+    const voiceText = useCallback(() => {
+      if (!mostUrgent) return '';
+      const name    = cname(mostUrgent);
+      const tLeft   = fmtRemaining(mostUrgent.remaining);
+      const zoneNum = mostUrgent.zoneName.replace('Zone ', '');
+
+      if (lang === 'ta') {
+        const urgency = mostUrgent.status === 'Sell Today'
+          ? 'இன்று உடனடியாக விற்பனை செய்யுங்கள்'
+          : 'விரைவில் விற்பனை செய்யுங்கள்';
+        return `கவனம் விவசாயரே. மண்டலம் ${zoneNum}-வில் உள்ள ${name}யை ${urgency}. இன்னும் சுமார் ${tLeft} மட்டுமே தரம் நீடிக்கும். உங்கள் வருமானத்தை பாதுகாக்க உடனடியாக சந்தைக்கு எடுத்துச் செல்லுங்கள்.`;
+      }
+      return `Attention farmer. ${name} in ${mostUrgent.zoneName} must be sold ${mostUrgent.status === 'Sell Today' ? 'today' : 'soon'}. Estimated shelf life remaining: ${tLeft}. Please take it to the market immediately to protect your income.`;
+    }, [lang, mostUrgent, currentDay]);
+
+    const estimatedDuration = useCallback(() => {
+      const text  = voiceText();
+      const words = text.split(/\s+/).length;
+      const wpm   = lang === 'ta' ? 85 : 130;
+      const secs  = Math.ceil(words / wpm * 60);
+      return secs < 60 ? `~${secs}s` : `~${Math.floor(secs/60)}m ${secs%60}s`;
+    }, [voiceText, lang]);
+
+    /* ---- VOICE CONTROLS ---- */
+    const playVoice = () => {
+      if (voiceStatus === 'paused') {
+        window.speechSynthesis.resume();
+        setVoiceStatus('speaking');
+        return;
+      }
+      if (!window.speechSynthesis) return;
+      window.speechSynthesis.cancel();
+      const text = voiceText();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang   = lang === 'ta' ? 'ta-IN' : 'en-IN';
+      u.rate   = lang === 'ta' ? 0.9 : 1.0;
+      u.pitch  = 1.0;
+      u.volume = 1.0;
+      if (lang === 'ta' && voices.ta) u.voice = voices.ta;
+      else if (lang === 'en' && voices.en) u.voice = voices.en;
+      u.onstart  = () => { setVoiceStatus('speaking'); setHasSpoken(true); };
+      u.onend    = () => setVoiceStatus('idle');
+      u.onerror  = () => setVoiceStatus('idle');
+      utterRef.current = u;
+      window.speechSynthesis.speak(u);
+    };
+
+    const pauseVoice = () => {
+      if (window.speechSynthesis) { window.speechSynthesis.pause(); setVoiceStatus('paused'); }
+    };
+
+    const stopVoice = () => {
+      if (window.speechSynthesis) { window.speechSynthesis.cancel(); setVoiceStatus('idle'); }
+    };
+
+    /* ============================================================
+       SECTION RENDERERS
+    ============================================================ */
+
+    /* ---- HERO 3-CARD GRID ---- */
+    const renderHero = () => (
+      <div>
+        <div class="flex items-center justify-between mb-3 sm:mb-4">
+          <h2 class="text-[10px] sm:text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+            <span>🎯</span>{t('heroSubtitle')}
+          </h2>
+          <div class="flex items-center gap-1.5 text-[10px] font-bold text-emerald-600">
+            <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+            {lang==='ta' ? 'நேரடி' : 'Live'}
+          </div>
+        </div>
+        {/* Mobile: single column. sm+: 3 columns */}
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+          {sellOrder.map((zone, i) => {
+            const hs = heroStyle[zone.status];
+            return (
+              <div key={zone.id}
+                class={`relative rounded-2xl p-4 sm:p-5 text-white overflow-hidden border ${hs.border} bg-gradient-to-br ${hs.bg} shadow-lg ${hs.shadow} transition-all duration-300 ${i===0?'ring-2 ring-white/20':''}`}
+                role="article" aria-label={`${rankLabel(i)}: ${cname(zone)}`}>
+                <div class="block">
+                  <div>
+                    <div class="flex justify-between items-center mb-3 gap-3">
+                      <span class={`inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border ${hs.badge} whitespace-nowrap flex-shrink-0`}>
+                        {i===0 && zone.status==='Sell Today' && <span class="relative w-1.5 h-1.5 rounded-full bg-red-300 pulse-ring animate-pulse flex-shrink-0"></span>}
+                        {rankLabel(i)}
+                      </span>
+                      <span class="text-2xl block sm:hidden absolute top-4 right-5">{zone.emoji}</span>
+                    </div>
+                    <h3 class="text-base sm:text-lg font-black leading-tight pr-8">{cname(zone)}</h3>
+                    <p class="text-[11px] text-white/65 font-semibold mt-0.5">{zone.zoneName} · {zdesc(zone)}</p>
+                  </div>
+                  {/* Desktop emoji */}
+                  <span class="text-2xl hidden sm:block absolute top-4 right-5">{zone.emoji}</span>
+                </div>
+                {/* Desktop and Mobile bottom */}
+                <div class="flex items-end justify-between gap-2 mt-3 sm:mt-4">
+                  <span class={`text-[11px] font-black px-3 py-1.5 rounded-full border whitespace-nowrap ${hs.badge}`}>{statusLabel(zone.status)}</span>
+                  <div class="text-right">
+                    <div class="text-[9px] text-white/55 font-bold uppercase tracking-wide">{t('remaining')}</div>
+                    <div class="text-sm font-black">{fmtRemaining(zone.remaining)}</div>
+                  </div>
+                </div>
+                <div class="mt-3 w-full bg-black/25 rounded-full h-1.5 overflow-hidden">
+                  <div class={`h-full rounded-full prog ${hs.bar}`} style={{width:`${zone.pct}%`}}></div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+
+    /* ---- FARMER IMPACT ---- */
+    const renderImpact = () => (
+      <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-5 sm:p-6 shadow-2xl border border-slate-700/50 relative overflow-hidden">
+        <div class="absolute -top-20 -left-20 w-60 h-60 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-20 -right-20 w-60 h-60 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="relative z-10">
+          <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+            <span class="text-emerald-400">💰</span>{t('impactTitle')}
+          </h3>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              { label:t('profitSaved'), val:`₹${profitSaved.toLocaleString('en-IN')}`, icon:'💰' },
+              { label:t('wasteKg'),    val:`${wasteKgNum} kg`,                         icon:'🌿' },
+              { label:t('incomePct'),  val:`+${incomePctNum}%`,                        icon:'📈' },
+              { label:t('co2'),        val:`${co2Num} kg`,                             icon:'🌍' },
+            ].map((m,i) => (
+              <div key={i} class="bg-white/5 rounded-2xl p-3 sm:p-4 border border-white/10 flex flex-col justify-between cursor-default hover:bg-white/10 transition-all">
+                <div class="text-[9px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1 leading-tight flex-wrap">
+                  <span>{m.icon}</span>{m.label}
+                </div>
+                <div class="text-xl sm:text-2xl font-black text-white mt-2 tracking-tight break-words">{m.val}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+
+    /* ---- STORAGE OVERVIEW ---- */
+    const renderOverview = () => (
+      <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-sm">
+        <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+          <Icon name="dashboard" className="w-3.5 h-3.5" />{t('overviewTitle')}
+        </h3>
+        <div class="grid grid-cols-4 gap-2 sm:gap-3">
+          {[
+            { lbl:t('totalLbl'), val:zones.length, icon:'📦', bg:'bg-slate-50',   border:'border-slate-200',  tx:'text-slate-700' },
+            { lbl:t('safeLbl'),  val:counts.safe,  icon:'✅', bg:'bg-emerald-50', border:'border-emerald-200',tx:'text-emerald-700' },
+            { lbl:t('warnLbl'),  val:counts.warn,  icon:'⚠️', bg:'bg-amber-50',   border:'border-amber-200',  tx:'text-amber-700' },
+            { lbl:t('critLbl'),  val:counts.crit,  icon:'🚨', bg:'bg-red-50',     border:'border-red-200',    tx:'text-red-700' },
+          ].map((s,i) => (
+            <div key={i} class={`${s.bg} rounded-2xl p-3 border ${s.border} text-center cursor-default transition-all ${s.val>0&&i>0?'hover:scale-105':''}`}>
+              <div class="text-lg mb-1">{s.icon}</div>
+              <div class={`text-2xl sm:text-3xl font-black ${s.tx} leading-none`}>{s.val}</div>
+              <div class={`text-[8px] sm:text-[9px] font-bold ${s.tx} opacity-70 uppercase tracking-wider mt-1 leading-tight`}>{s.lbl}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+
+    /* ---- SELLING ORDER ---- */
+    const renderPriority = () => (
+      <div class="bg-white rounded-3xl p-4 sm:p-6 border border-slate-100 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-sm font-black text-slate-800 flex items-center gap-2">
+            <span>🏆</span>{t('priorityTitle')}
+          </h3>
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider hidden sm:block">{t('prioritySub')}</span>
+        </div>
+
+        {/* Mobile: Card layout */}
+        <div class="space-y-3 sm:hidden">
+          {sellOrder.map((zone, i) => (
+            <div key={zone.id} class={`flex flex-col items-center text-center gap-2 p-4 rounded-2xl border ${zone.borderCls} transition-all duration-500`}>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-2xl">{zone.emoji}</span>
+                <span class="font-black text-slate-800 text-lg">{cname(zone)}</span>
+              </div>
+              <span class={`text-xs font-black px-4 py-1.5 rounded-full border uppercase tracking-wider ${zone.badgeCls}`}>
+                {statusLabel(zone.status)}
+              </span>
+              <div class={`text-base font-black mt-1 ${zone.textCls}`}>
+                {fmtRemaining(zone.remaining)}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop: existing horizontal row layout */}
+        <div class="hidden sm:block space-y-3">
+          {sellOrder.map((zone, i) => (
+            <div key={zone.id}
+              class={`flex items-center justify-between p-4 rounded-2xl border transition-all duration-500 ${zone.borderCls} hover:shadow-md group`}>
+              <div class="flex items-center gap-3 min-w-0">
+                <div class={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-sm flex-shrink-0 ${i===0?'bg-red-100 text-red-700':i===1?'bg-amber-100 text-amber-700':'bg-emerald-100 text-emerald-700'}`}>{i+1}</div>
+                <div class={`w-10 h-10 rounded-xl ${zone.iconBg} ${zone.iconTx} flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0`}>
+                  <Icon name={zone.icon} className="w-5 h-5" />
+                </div>
+                <div class="min-w-0">
+                  <div class="font-extrabold text-slate-800 leading-tight">{cname(zone)}</div>
+                  <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{zone.zoneName} · {zdesc(zone)}</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 flex-shrink-0">
+                <div class="text-right">
+                  <div class="text-sm font-black text-slate-700">{fmtRemaining(zone.remaining)}</div>
+                  <div class="text-[9px] text-slate-400 font-bold uppercase">{t('remaining')}</div>
+                </div>
+                <span class={`text-xs font-bold px-3 py-1.5 rounded-full border whitespace-nowrap ${zone.badgeCls}`}>{statusLabel(zone.status)}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+
+    /* ---- LIVE STORAGE ZONES ---- */
+    const renderZones = () => (
+      <div>
+        <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+          <Icon name="wifi" className="w-3.5 h-3.5" />{t('zonesTitle')}
+        </h3>
+        <div class="space-y-5">
+          {liveZones.map(zone => (
+            <div key={zone.id} class={`bg-white rounded-3xl border shadow-sm overflow-hidden card-lift ${zone.borderCls}`}>
+              {/* Zone header */}
+              <div class={`px-4 sm:px-6 py-4 flex items-center justify-between flex-wrap gap-3 ${zone.status==='Sell Today'?'bg-red-50/60':zone.status==='Sell Soon'?'bg-amber-50/40':'bg-emerald-50/30'}`}>
+                <div class="flex items-center gap-3">
+                  <div class={`w-11 h-11 rounded-2xl ${zone.iconBg} ${zone.iconTx} flex items-center justify-center shadow-sm flex-shrink-0`}>
+                    <Icon name={zone.icon} className="w-5 h-5 sm:w-6 sm:h-6" />
+                  </div>
+                  <div class="min-w-0">
+                    <h4 class="text-base sm:text-lg font-black text-slate-800 leading-tight">{cname(zone)}</h4>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{zone.zoneName} · {zdesc(zone)}</p>
+                  </div>
+                </div>
+                <span class={`text-xs font-bold px-4 py-2 rounded-full border whitespace-nowrap ${zone.badgeCls}`}>{statusLabel(zone.status)}</span>
+              </div>
+              <div class="p-4 sm:p-6 flex flex-col sm:block">
+                {/* Sensor grid: single col on mobile, 2-col on sm+ */}
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4 order-3 sm:order-none">
+                  {/* Temperature */}
+                  <div class="bg-slate-50 rounded-2xl p-3 sm:p-4 border border-slate-100">
+                    <div class="flex items-center gap-1.5 mb-2">
+                      <Icon name="thermometer" className="w-3.5 h-3.5 text-orange-500" />
+                      <span class="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('tempLbl')}</span>
+                    </div>
+                    <div class="text-xl sm:text-2xl font-black text-slate-800">{zone.temperature}°C</div>
+                    <div class="flex items-center justify-between mt-2">
+                      <div>
+                        <div class="text-[8px] text-slate-400 font-bold uppercase">{t('idealLabel')}</div>
+                        <div class="text-xs font-bold text-slate-500">{zone.idealTemp}°C</div>
+                      </div>
+                      <div class={`text-xs font-black px-2 py-0.5 rounded-lg ${zone.tempDev>3?'bg-red-100 text-red-700':zone.tempDev>0?'bg-amber-100 text-amber-700':'bg-emerald-100 text-emerald-700'}`}>
+                        {zone.tempDev>0?'+':''}{zone.tempDev}°
+                      </div>
+                    </div>
+                  </div>
+                  {/* Humidity */}
+                  <div class="bg-slate-50 rounded-2xl p-3 sm:p-4 border border-slate-100">
+                    <div class="flex items-center gap-1.5 mb-2">
+                      <Icon name="droplets" className="w-3.5 h-3.5 text-blue-500" />
+                      <span class="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('humidLbl')}</span>
+                    </div>
+                    <div class="text-xl sm:text-2xl font-black text-slate-800">{zone.humidity}%</div>
+                    <div class="flex items-center justify-between mt-2">
+                      <div>
+                        <div class="text-[8px] text-slate-400 font-bold uppercase">{t('idealLabel')}</div>
+                        <div class="text-xs font-bold text-slate-500">{zone.idealHumidity}%</div>
+                      </div>
+                      <div class={`text-xs font-black px-2 py-0.5 rounded-lg ${Math.abs(zone.humDev)>20?'bg-red-100 text-red-700':Math.abs(zone.humDev)>8?'bg-amber-100 text-amber-700':'bg-emerald-100 text-emerald-700'}`}>
+                        {zone.humDev>0?'+':''}{zone.humDev}%
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Extra info: stored/expiry/profit */}
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 mb-4 order-5 sm:order-none">
+                  <div class="bg-slate-50 rounded-xl p-2.5 sm:p-3 border border-slate-100 text-center">
+                    <div class="text-[8px] sm:text-[9px] text-slate-400 font-bold uppercase tracking-wider mb-1">{t('storedOnLbl')}</div>
+                    <div class="text-sm font-black text-slate-700">{lang==='ta'?'நாள்':'Day'} {zone.storedDay}</div>
+                  </div>
+                  <div class="bg-slate-50 rounded-xl p-2.5 sm:p-3 border border-slate-100 text-center">
+                    <div class="text-[8px] sm:text-[9px] text-slate-400 font-bold uppercase tracking-wider mb-1">{t('expiryDay')}</div>
+                    <div class="text-sm font-black text-slate-700">{lang==='ta'?'நாள்':'Day'} {Math.min(60, zone.storedDay + Math.max(1, Math.ceil(zone.remaining/zone.degradationFactor)))}</div>
+                  </div>
+                  <div class="bg-emerald-50 rounded-xl p-2.5 sm:p-3 border border-emerald-100 text-center col-span-2 sm:col-span-1">
+                    <div class="text-[8px] sm:text-[9px] text-emerald-600 font-bold uppercase tracking-wider mb-1">{t('protectedLbl')}</div>
+                    <div class="text-sm font-black text-emerald-700">₹{zone.profitProtected}</div>
+                  </div>
+                </div>
+
+                {/* Shelf life bar */}
+                <div class="mb-4 order-2 sm:order-none">
+                  <div class="flex justify-between items-center mb-1.5">
+                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{t('shelfLbl')}</span>
+                    <span class={`text-sm font-black ${zone.textCls}`}>{fmtRemaining(zone.remaining)}</span>
+                  </div>
+                  <div class="w-full bg-slate-100 rounded-full h-2.5 sm:h-3 overflow-hidden border border-slate-200/50 shadow-inner">
+                    <div class={`h-full rounded-full prog ${zone.progColor}`} style={{width:`${zone.pct}%`}}></div>
+                  </div>
+                  <div class="flex justify-between text-[9px] text-slate-400 font-semibold mt-1">
+                    <span>0</span>
+                    <span class="font-black text-slate-600">{zone.pct.toFixed(0)}% {lang==='ta'?'மீதம்':'remaining'}</span>
+                    <span>{zone.baseShelfLife}d</span>
+                  </div>
+                </div>
+
+                {/* Reason */}
+                <div class={`rounded-2xl p-3 sm:p-4 border order-4 sm:order-none ${zone.status==='Sell Today'?'bg-red-50 border-red-100':zone.status==='Sell Soon'?'bg-amber-50 border-amber-100':'bg-emerald-50/50 border-emerald-100'}`}>
+                  <h5 class="text-[10px] font-black text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <span>💡</span>{t('whyLbl')}
+                  </h5>
+                  <p class="text-xs text-slate-600 leading-relaxed font-semibold break-words">
+                    {lang==='ta' ? zone.reasonTa : zone.reasonEn}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+
+    /* ---- WHY + HARDWARE ---- */
+    const renderWhyHW = () => (
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+        {/* Why UZHAVAI */}
+        <div class="bg-white rounded-3xl p-4 sm:p-6 border border-slate-100 shadow-sm">
+          <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+            <span>🤔</span>{t('whyTitle')}
+          </h3>
+          <div class="space-y-3">
+            <div class="bg-red-50 rounded-xl p-3 border border-red-100">
+              <div class="text-xs font-black text-red-700 mb-2">❌ {t('withoutTitle')}</div>
+              {[
+                lang==='ta'?'காய்கறிகள் சேமிப்பகத்தில் மறக்கப்படும்':'Vegetables forgotten in storage',
+                lang==='ta'?'அதிக உணவு வீணாதல்':'Higher food waste & losses',
+                lang==='ta'?'அழுகும் எச்சரிக்கைகள் இல்லை':'Zero spoilage warnings',
+              ].map((item,i) => (
+                <div key={i} class="flex items-start gap-2 text-xs text-red-600 font-semibold mb-1 break-words">
+                  <span class="text-red-400 mt-0.5 flex-shrink-0">•</span><span>{item}</span>
+                </div>
+              ))}
+            </div>
+            <div class="bg-emerald-50 rounded-xl p-3 border border-emerald-100">
+              <div class="text-xs font-black text-emerald-700 mb-2">✅ {t('withTitle')}</div>
+              {[
+                lang==='ta'?'நேரடி அழுகும் எச்சரிக்கைகள்':'Realtime spoilage alerts',
+                lang==='ta'?'குறைந்த உணவு கழிவு':'Reduced food waste & profit loss',
+                lang==='ta'?'முதலில் விற்க வேண்டியதை தெரிகிறது':'Know exactly what to sell first',
+              ].map((item,i) => (
+                <div key={i} class="flex items-start gap-2 text-xs text-emerald-700 font-semibold mb-1 break-words">
+                  <Icon name="check" className="w-3 h-3 text-emerald-500 mt-0.5 flex-shrink-0" /><span>{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        {/* Hardware */}
+        <div class="bg-white rounded-3xl p-4 sm:p-6 border border-slate-100 shadow-sm">
+          <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+            <span>🔌</span>{t('hwTitle')}
+          </h3>
+          <div class="space-y-2">
+            {[
+              { icon:'cpu',         lbl:'ESP32 MCU',           sub:lang==='ta'?'மைய செயலாக்கி':'Main controller',     cl:'bg-slate-100 text-slate-600' },
+              { icon:'thermometer', lbl:'3× DHT11',            sub:lang==='ta'?'ஒவ்வொரு பகுதி':'One per zone',        cl:'bg-orange-100 text-orange-600' },
+              { icon:'wifi',        lbl:lang==='ta'?'உள்ளூர் வைஃபை':'Local WiFi', sub:lang==='ta'?'தனியார் நெட்வொர்க்':'Private network', cl:'bg-blue-100 text-blue-600' },
+              { icon:'monitor',     lbl:'UZHAVAI Dashboard',   sub:lang==='ta'?'முடிவு ஆதரவு':'Decision support',     cl:'bg-emerald-100 text-emerald-600' },
+              { icon:'bell',        lbl:'WhatsApp / SMS',      sub:lang==='ta'?'விவசாயி எச்சரிக்கைகள்':'Farmer alerts', cl:'bg-green-100 text-green-600' },
+            ].map((n,i,arr) => (
+              <div key={i} class={`flex items-center gap-3 p-2.5 rounded-xl border border-slate-100 ${n.cl.split(' ')[0]}`}>
+                <div class={`w-8 h-8 rounded-lg ${n.cl} flex items-center justify-center flex-shrink-0`}>
+                  <Icon name={n.icon} className="w-4 h-4" />
+                </div>
+                <div class="min-w-0 flex-1">
+                  <div class="text-xs font-bold text-slate-700 leading-tight">{n.lbl}</div>
+                  <div class="text-[9px] text-slate-400 font-semibold">{n.sub}</div>
+                </div>
+                {i<arr.length-1 && <Icon name="arrowR" className="w-3 h-3 text-slate-300 flex-shrink-0" />}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+
+    /* ---- IMPACT STATS ---- */
+    const renderImpactStats = () => (
+      <div class="bg-emerald-50/50 rounded-3xl p-4 sm:p-6 border border-emerald-100 shadow-sm">
+        <h3 class="text-[10px] font-black text-emerald-800 uppercase tracking-widest mb-4 flex items-center gap-2">
+          <span>📈</span>{t('impactStatTitle')}
+        </h3>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+          {[
+            { lbl:t('phLoss'),     val:'30%',   sub:lang==='ta'?'குறைப்பு':'reduction' },
+            { lbl:t('savings'),    val:'₹1,250+',sub:lang==='ta'?'மாதம்':'per month' },
+            { lbl:t('monitoring'), val:'24/7',   sub:lang==='ta'?'தொடர்ச்சி':'continuous' },
+            { lbl:t('offline'),    val:'100%',   sub:lang==='ta'?'ஆஃப்லைன்':'no internet' },
+          ].map((s,i) => (
+            <div key={i} class="bg-white rounded-2xl p-3 sm:p-4 border border-emerald-100 text-center card-lift cursor-default">
+              <div class="text-xl sm:text-2xl font-black text-emerald-700">{s.val}</div>
+              <div class="text-[8px] sm:text-[9px] font-bold text-slate-500 uppercase tracking-wider mt-1 leading-tight">{s.lbl}</div>
+              <div class="text-[8px] text-slate-400 font-semibold">{s.sub}</div>
+            </div>
+          ))}
+        </div>
+        <div class="flex items-center gap-3 bg-white rounded-2xl p-3 border border-emerald-100">
+          <span class="text-xl flex-shrink-0">📡</span>
+          <div class="min-w-0 flex-1">
+            <div class="text-xs font-black text-emerald-800">{t('offlineBadge')}</div>
+            <div class="text-[10px] text-slate-500 font-semibold break-words">{t('offlineNote')}</div>
+          </div>
+          <div class="ml-auto flex items-center gap-1.5 text-[10px] font-bold text-emerald-600 flex-shrink-0">
+            <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+            {lang==='ta'?'செயலில்':'Active'}
+          </div>
+        </div>
+      </div>
+    );
+
+    /* ---- STORAGE HISTORY ---- */
+    const renderHistory = () => (
+      <div class="bg-white rounded-3xl p-4 sm:p-6 border border-slate-100 shadow-sm">
+        <h3 class="text-sm font-black text-slate-800 flex items-center gap-2 mb-4">
+          <Icon name="history" className="w-4 h-4 text-slate-400" />{t('historyTitle')}
+        </h3>
+        <div class="overflow-x-auto scroll -mx-4 px-4 sm:mx-0 sm:px-0">
+          <table class="w-full text-xs min-w-[460px]">
+            <thead>
+              <tr class="border-b border-slate-100">
+                {[t('hVeg'),t('hDate'),t('hTime'),t('hZone'),t('hStatus'),t('hLife')].map(h => (
+                  <th key={h} class="text-left pb-2.5 pr-4 font-bold text-slate-400 uppercase tracking-wider text-[9px] sm:text-[10px] whitespace-nowrap">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50">
+              {history.map(item => (
+                <tr key={item.id} class="hover:bg-slate-50 transition-colors">
+                  <td class="py-2.5 pr-4 font-bold text-slate-700 whitespace-nowrap">{lang==='ta'?item.cropTa:item.cropEn}</td>
+                  <td class="py-2.5 pr-4 text-slate-500">{lang==='ta'?'நாள்':'Day'} {item.storedDay}</td>
+                  <td class="py-2.5 pr-4 text-slate-500 whitespace-nowrap">{item.storedTime}</td>
+                  <td class="py-2.5 pr-4 text-slate-500">{item.zone}</td>
+                  <td class="py-2.5 pr-4">
+                    <span class={`px-2 py-0.5 rounded-full text-[9px] font-bold border ${item.status==='Safe'?'bg-emerald-100 text-emerald-700 border-emerald-200':'bg-amber-100 text-amber-700 border-amber-200'}`}>{item.status}</span>
+                  </td>
+                  <td class="py-2.5 text-slate-500 whitespace-nowrap">{item.shelfLife}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+
+    /* ---- SIMULATOR PANEL ---- */
+    const renderSimulator = () => (
+      <div class="bg-white rounded-3xl border border-orange-100 shadow-sm overflow-hidden">
+        <div class="bg-gradient-to-r from-orange-50 to-amber-50 px-4 sm:px-6 py-4 border-b border-orange-100">
+          <h3 class="text-sm font-black text-orange-900 flex items-center gap-2">
+            <span>🛠️</span>{t('simTitle')}
+          </h3>
+          <p class="text-[11px] text-orange-600 font-medium mt-0.5 break-words">{t('simSub')}</p>
+        </div>
+        <div class="p-4 sm:p-6 space-y-5">
+
+          {/* TIME TRAVEL */}
+          <div class="bg-orange-50/60 rounded-2xl p-4 border border-orange-100/80">
+            <div class="flex justify-between items-center mb-3 flex-wrap gap-2">
+              <span class="text-xs font-black text-orange-800 uppercase tracking-wider">⏱ {t('timeTravel')}</span>
+              <span class="text-xs font-black bg-orange-100 text-orange-900 px-3 py-1 rounded-full border border-orange-200">{t('day')} {currentDay}</span>
+            </div>
+            <input type="range" min="1" max="30" value={currentDay}
+              onChange={e => { setDemoMode(false); setCurrentDay(parseInt(e.target.value)); }}
+              class="w-full touch-target"
+              aria-label="Time travel slider"
+              style={{accentColor:'#ea580c', background:`linear-gradient(to right, #ea580c ${(currentDay-1)/29*100}%, #fed7aa ${(currentDay-1)/29*100}%)`}}
+            />
+            <div class="flex justify-between text-[10px] font-bold text-orange-700/60 mt-1.5 px-0.5">
+              {['1','8','16','24','30'].map(d=><span key={d}>{d}</span>)}
+            </div>
+          </div>
+
+          {/* DEMO STORY */}
+          <div class="bg-emerald-50/50 rounded-2xl p-4 border border-emerald-100/80">
+            <div class="flex justify-between items-center mb-3 flex-wrap gap-2">
+              <span class="text-xs font-black text-emerald-800 uppercase tracking-wider">🎬 {t('storyMode')}</span>
+              <span class={`text-[9px] font-bold px-2.5 py-0.5 rounded-full border flex-shrink-0 ${demoMode?'bg-emerald-200 text-emerald-900 border-emerald-300 animate-pulse':'bg-slate-100 text-slate-500 border-slate-200'}`}>
+                {demoMode?t('playing'):t('idle')}
+              </span>
+            </div>
+            {demoMode && (
+              <div class="mb-3">
+                <div class="w-full bg-emerald-200/50 rounded-full h-1.5 overflow-hidden">
+                  <div class="h-full bg-emerald-500 rounded-full prog" style={{width:`${((demoStep+1)/STORY.length)*100}%`}}></div>
+                </div>
+                <div class="text-[10px] text-emerald-700 font-bold mt-1 break-words">
+                  {t('stepLabel')} {demoStep+1}/{STORY.length}: {lang==='ta'?STORY[demoStep].titleTa:STORY[demoStep].titleEn}
+                </div>
+              </div>
+            )}
+            <div class="bg-white/80 rounded-xl p-3 border border-emerald-100 mb-3 text-xs text-slate-600 font-semibold leading-relaxed min-h-[56px] break-words">
+              {demoMode
+                ? (lang==='ta'?STORY[demoStep].textTa:STORY[demoStep].textEn)
+                : <span class="text-slate-400 italic">{lang==='ta'?'"டெமோ தொடங்கு" கிளிக் செய்யவும் — 7 நிலைகள் தானியங்கியாக இயங்கும்':'Click Start Demo — 7-step automated harvest-to-sale story.'}</span>
+              }
+            </div>
+            <div class="flex gap-2">
+              {!demoMode
+                ? <button onClick={startDemo} aria-label="Start demo"
+                    class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm touch-target">
+                    <Icon name="play" className="w-3.5 h-3.5" />{t('startDemo')}
+                  </button>
+                : <button onClick={pauseDemo} aria-label="Pause demo"
+                    class="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all touch-target">
+                    <Icon name="pause" className="w-3.5 h-3.5" />{t('pauseDemo')}
+                  </button>
+              }
+              <button onClick={resetDemo} aria-label="Reset demo"
+                class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 px-3 rounded-xl text-xs border border-slate-200 flex items-center gap-1.5 transition-all touch-target">
+                <Icon name="refresh" className="w-3.5 h-3.5" />{t('resetDemo')}
+              </button>
+            </div>
+          </div>
+
+          {/* SENSOR CONTROLS */}
+          <div class="space-y-3">
+            <h4 class="text-[10px] font-black text-slate-500 uppercase tracking-widest">{t('sensorsTitle')}</h4>
+            {[
+              { id:'zoneA', label:t('zA'), emoji:'🥬', unit:'%',  prop:'humidity',    min:30, max:100, idealVal:INIT[0].idealHumidity, threshTxt:`Min: ${INIT[0].minHumidity}%`,  color:'#10b981', bg:'bg-emerald-50/60', border:'border-emerald-100' },
+              { id:'zoneB', label:t('zB'), emoji:'🍅', unit:'°C', prop:'temperature', min:10, max:50,  idealVal:INIT[1].idealTemp,     threshTxt:`Max: ${INIT[1].maxTemp}°C`,      color:'#ef4444', bg:'bg-red-50/60',     border:'border-red-100' },
+              { id:'zoneC', label:t('zC'), emoji:'🧅', unit:'%',  prop:'humidity',    min:20, max:100, idealVal:INIT[2].idealHumidity, threshTxt:`Max: ${INIT[2].maxHumidity}%`, color:'#8b5cf6', bg:'bg-purple-50/60', border:'border-purple-100' },
+            ].map(ctrl => {
+              const val = zones.find(z=>z.id===ctrl.id)[ctrl.prop];
+              return (
+                <div key={ctrl.id} class={`${ctrl.bg} rounded-xl p-3 border ${ctrl.border}`}>
+                  <div class="flex justify-between items-center mb-2 flex-wrap gap-1">
+                    <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5 flex-wrap min-w-0">
+                      <span class="flex-shrink-0">{ctrl.emoji}</span>
+                      <span class="break-words">{ctrl.label}</span>
+                    </span>
+                    <span class="text-xs font-black px-2.5 py-0.5 rounded-full bg-white/80 border border-slate-200 text-slate-700 flex-shrink-0">
+                      {val}{ctrl.unit}
+                    </span>
+                  </div>
+                  <input type="range" min={ctrl.min} max={ctrl.max} value={val}
+                    onChange={e => setZones(p => p.map(z => z.id===ctrl.id ? {...z,[ctrl.prop]:parseInt(e.target.value)} : z))}
+                    class="w-full touch-target"
+                    aria-label={`${ctrl.label} ${val}${ctrl.unit}`}
+                    style={{accentColor:ctrl.color}}
+                  />
+                  <div class="flex justify-between text-[9px] font-semibold text-slate-400 mt-1">
+                    <span>{lang==='ta'?'சிறந்தது':'Ideal'}: {ctrl.idealVal}{ctrl.unit}</span>
+                    <span class="text-amber-600 font-bold">{ctrl.threshTxt}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* RESTOCK */}
+          <div>
+            <h4 class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">{t('restockTitle')}</h4>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
+              {liveZones.map(zone => (
+                <button key={zone.id} onClick={() => handleRestock(zone.id)}
+                  aria-label={`Restock ${cname(zone)}`}
+                  class={`flex sm:flex-col items-center sm:justify-center justify-start gap-3 sm:gap-1.5 py-3 px-4 sm:px-2 rounded-xl border transition-all hover:shadow-md active:scale-95 ${zone.iconBg} ${zone.iconTx} touch-target`}>
+                  <span class="text-xl sm:text-2xl flex-shrink-0">{zone.emoji}</span>
+                  <div class="flex flex-col sm:items-center items-start text-left sm:text-center">
+                    <span class="text-[11px] sm:text-[10px] font-bold">{t('restockBtn')}</span>
+                    <span class="text-[10px] sm:text-[9px] font-bold opacity-75 break-words leading-tight">{cname(zone)}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+
+    /* ---- PHONE NOTIFICATION CENTER ---- */
+    const renderPhone = () => (
+      <div class="flex justify-center w-full pt-4 sm:pt-0 pb-4 sm:pb-0">
+        {/* Mobile: full-width phone frame */}
+        <div class="phone-frame w-full max-w-[420px] mx-auto shadow-2xl">
+          <div class="bg-slate-950 rounded-[32px] overflow-hidden flex flex-col relative" style={{height:'680px', maxHeight:'88vh'}}>
+
+            {/* Notch */}
+            <div class="flex justify-center pt-2.5 pb-1 bg-black flex-shrink-0">
+              <div class="w-24 h-5 bg-black rounded-b-2xl flex items-center justify-center gap-1.5">
+                <div class="w-1 h-1 bg-slate-800 rounded-full"></div>
+                <div class="w-10 h-1 bg-slate-900 rounded-full"></div>
+                <div class="w-1 h-1 bg-slate-800 rounded-full"></div>
+              </div>
+            </div>
+
+            {/* Status bar */}
+            <div class="px-5 py-1 flex justify-between text-[9px] font-bold text-slate-500 flex-shrink-0">
+              <span>UZHAVAI OS</span>
+              <div class="flex items-center gap-1">📶 4G 🔋97%</div>
+            </div>
+
+            {/* Header */}
+            <div class="px-4 pb-1.5 border-b border-slate-800 flex-shrink-0">
+              <h4 class="text-[9px] font-black text-slate-400 uppercase tracking-widest">{t('phoneHeader')}</h4>
+            </div>
+
+            {/* Tabs */}
+            <div class="flex border-b border-slate-800 bg-slate-900/80 flex-shrink-0">
+              {[
+                { id:'whatsapp', label:t('waTab'),    active:'text-green-400 border-green-500' },
+                { id:'sms',      label:t('smsTab'),   active:'text-blue-400  border-blue-500' },
+                { id:'voice',    label:t('voiceTab'), active:'text-amber-400 border-amber-500' },
+              ].map(tab => (
+                <button key={tab.id} onClick={() => setPhoneTab(tab.id)}
+                  aria-label={tab.label}
+                  class={`flex-1 py-2.5 text-center text-[10px] font-black transition-all touch-target ${phoneTab===tab.id?`${tab.active} border-b-2 bg-slate-800/40`:'text-slate-600 hover:text-slate-400'}`}>
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* WHATSAPP */}
+            {phoneTab==='whatsapp' && (
+              <div class="flex flex-col flex-1 overflow-hidden">
+                {/* WA header */}
+                <div class="flex items-center gap-3 px-4 py-2.5 bg-slate-900 border-b border-slate-800 flex-shrink-0">
+                  <div class="relative flex-shrink-0">
+                    <div class="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500 to-green-700 flex items-center justify-center text-sm font-black text-white">🌾</div>
+                    <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full border-2 border-slate-900"></span>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <div class="text-xs font-black text-white">UZHAVAI AI</div>
+                    <div class="text-[9px] text-green-400 font-semibold">{t('waOnline')}</div>
+                  </div>
+                </div>
+                {/* Messages */}
+                <div class="flex-1 p-3 space-y-3 overflow-y-auto scroll bg-slate-950">
+                  {/* Welcome */}
+                  <div class="flex items-start gap-2">
+                    <div class="w-7 h-7 rounded-full bg-emerald-700 flex items-center justify-center text-xs flex-shrink-0">🌾</div>
+                    <div class="relative wa-tail bg-slate-800 rounded-r-2xl rounded-bl-2xl px-3 py-2.5 max-w-[85%]">
+                      <div class="text-[10px] font-black text-green-400 mb-1">UZHAVAI</div>
+                      <p class="text-[10px] text-slate-300 leading-relaxed font-medium break-words">{t('waWelcome')}</p>
+                      <div class="text-[8px] text-slate-600 mt-1 text-right">09:00 ✓✓</div>
+                    </div>
+                  </div>
+                  {/* Dynamic alerts */}
+                  {notifs.filter(n=>n.type==='whatsapp').map(notif => (
+                    <div key={notif.id} class="flex items-start gap-2 slide-up">
+                      <div class="w-7 h-7 rounded-full bg-emerald-700 flex items-center justify-center text-xs flex-shrink-0">{notif.emoji||'🌾'}</div>
+                      <div class={`relative wa-tail rounded-r-2xl rounded-bl-2xl px-3 py-2.5 max-w-[85%] border ${
+                        notif.isRestock?'bg-emerald-950/70 border-emerald-900/40':
+                        notif.status==='Sell Today'?'bg-red-950/60 border-red-900/40':
+                        notif.status==='Sell Soon'?'bg-amber-950/60 border-amber-900/40':
+                        'bg-slate-800 border-transparent'
+                      }`}>
+                        <div class={`text-[10px] font-black mb-1 ${notif.isRestock?'text-emerald-400':notif.status==='Sell Today'?'text-red-400':notif.status==='Sell Soon'?'text-amber-400':'text-green-400'}`}>UZHAVAI</div>
+                        <p class="text-[10px] text-slate-300 leading-relaxed font-medium whitespace-pre-line break-words">{lang==='ta'?notif.ta:notif.en}</p>
+                        <div class="text-[8px] text-slate-600 mt-1 text-right">{notif.time} ✓✓</div>
+                      </div>
+                    </div>
+                  ))}
+                  {/* Typing */}
+                  {showTyping && (
+                    <div class="flex items-start gap-2 fade-in">
+                      <div class="w-7 h-7 rounded-full bg-emerald-700 flex items-center justify-center text-xs flex-shrink-0">🌾</div>
+                      <div class="bg-slate-800 rounded-r-2xl rounded-bl-2xl px-4 py-3">
+                        <div class="flex items-center gap-1.5">
+                          {[0,1,2].map(i => <div key={i} class="w-1.5 h-1.5 bg-slate-400 rounded-full tdot"></div>)}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {notifs.filter(n=>n.type==='whatsapp').length===0 && !showTyping && (
+                    <div class="text-center py-8">
+                      <div class="text-2xl mb-2">💬</div>
+                      <p class="text-[10px] text-slate-600 font-medium break-words px-4">{lang==='ta'?'சேமிப்பு நிலை மாறும்போது அறிவிப்புகள் இங்கே தோன்றும்.':'Alerts appear here when storage conditions change.'}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* SMS */}
+            {phoneTab==='sms' && (
+              <div class="flex flex-col flex-1 overflow-hidden">
+                <div class="flex items-center gap-3 px-4 py-2.5 bg-blue-950/40 border-b border-slate-800 flex-shrink-0">
+                  <div class="w-9 h-9 rounded-full bg-blue-700 flex items-center justify-center text-[10px] font-black text-white flex-shrink-0">SMS</div>
+                  <div class="min-w-0">
+                    <div class="text-xs font-black text-white">UZHAVAI-ALERTS</div>
+                    <div class="text-[9px] text-slate-400 font-semibold">{lang==='ta'?'தானியங்கி SMS':'Automated alert service'}</div>
+                  </div>
+                </div>
+                <div class="flex-1 p-3 space-y-2 overflow-y-auto scroll bg-slate-100">
+                  <div class="flex justify-start">
+                    <div class="bg-white rounded-2xl rounded-tl-none p-3 max-w-[85%] shadow-sm border border-slate-100">
+                      <p class="text-[10px] text-slate-700 font-medium leading-relaxed break-words">{t('smsWelcome')}</p>
+                      <div class="text-[8px] text-slate-400 mt-1">09:00 AM</div>
+                    </div>
+                  </div>
+                  {notifs.filter(n=>n.type==='sms').map(notif => (
+                    <div key={notif.id} class="flex justify-start slide-up">
+                      <div class={`rounded-2xl rounded-tl-none p-3 max-w-[85%] shadow-sm border break-words ${(lang==='en'?notif.en:notif.ta).includes('CRITICAL')||(lang==='ta'?notif.ta:notif.en).includes('அவசரம்')?'bg-red-50 border-red-200':'bg-amber-50 border-amber-100'}`}>
+                        <p class="text-[10px] font-semibold leading-relaxed text-slate-700">{lang==='ta'?notif.ta:notif.en}</p>
+                        <div class="text-[8px] text-slate-400 mt-1">{notif.time}</div>
+                      </div>
+                    </div>
+                  ))}
+                  {notifs.filter(n=>n.type==='sms').length===0 && (
+                    <div class="text-center py-8">
+                      <div class="text-2xl mb-2">📱</div>
+                      <p class="text-[10px] text-slate-400 font-medium">{lang==='ta'?'SMS எச்சரிக்கைகள் இங்கே தோன்றும்.':'SMS alerts appear here.'}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* VOICE */}
+            {phoneTab==='voice' && (
+              <div class="flex-1 overflow-y-auto scroll p-4 space-y-3 bg-slate-950">
+                {/* Voice system info */}
+                <div class="bg-slate-900 rounded-2xl p-3.5 border border-slate-800" role="status" aria-live="polite">
+                  <div class="flex items-center justify-between mb-3">
+                    <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">{t('voiceReady')}</span>
+                    <span class={`text-[9px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 ${
+                      voiceStatus==='speaking' ? 'bg-green-900/60 text-green-300 border border-green-800/50 speak-pulse' :
+                      voiceStatus==='paused'   ? 'bg-amber-900/60 text-amber-300 border border-amber-800/50' :
+                                                 'bg-slate-800 text-slate-500 border border-slate-700'
+                    }`}>
+                      {voiceStatus==='speaking' && <span class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>}
+                      {voiceStatus==='speaking' ? t('voiceStatus_speaking') : voiceStatus==='paused' ? t('voiceStatus_paused') : t('voiceStatus_idle')}
+                    </span>
+                  </div>
+                  <div class="space-y-1.5">
+                    <div class="flex justify-between items-center">
+                      <span class="text-[9px] text-slate-500 font-bold uppercase">{t('voiceLang')}</span>
+                      <span class="text-[10px] text-slate-300 font-bold">{lang==='ta'?'Tamil (ta-IN)':'English (en-IN)'}</span>
+                    </div>
+                    <div class="flex justify-between items-start gap-2">
+                      <span class="text-[9px] text-slate-500 font-bold uppercase flex-shrink-0">{t('voiceName')}</span>
+                      <span class="text-[10px] text-slate-300 font-bold text-right break-words max-w-[65%]">
+                        {lang==='ta'
+                          ? (voices.ta ? voices.ta.name : <span class="text-amber-400">{lang==='ta'?'இயல்புநிலை':'Default'}</span>)
+                          : (voices.en ? voices.en.name : 'Browser Default')}
+                      </span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                      <span class="text-[9px] text-slate-500 font-bold uppercase">{t('voiceDuration')}</span>
+                      <span class="text-[10px] text-slate-300 font-bold">{estimatedDuration()}</span>
+                    </div>
+                  </div>
+                  {lang==='ta' && !voices.ta && (
+                    <div class="mt-2 text-[9px] text-amber-400 font-bold bg-amber-950/30 rounded-lg px-2 py-1.5 border border-amber-900/30 break-words">
+                      ⚠ {t('voiceNoTamil')}
+                    </div>
+                  )}
+                </div>
+
+                {/* Waveform */}
+                <div class="flex items-end justify-center gap-0.5 h-10 px-2">
+                  {[4,7,5,11,6,9,3,12,5,8,4,10,6,8,5,7,4].map((h,i) => (
+                    <div key={i}
+                      class={`flex-1 rounded-full transition-all duration-150 ${
+                        voiceStatus==='speaking' ? 'bg-amber-400 wave-bar' :
+                        voiceStatus==='paused'   ? 'bg-amber-600/50' :
+                                                   'bg-slate-700'
+                      }`}
+                      style={{height:`${voiceStatus==='speaking'?h*2.8:4}px`, animationDelay:`${i*0.065}s`}}>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Controls */}
+                <div class="flex gap-2">
+                  {voiceStatus==='idle' && (
+                    <button onClick={playVoice} aria-label="Play voice alert"
+                      class="flex-1 py-3 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold rounded-2xl text-xs flex items-center justify-center gap-2 transition-all touch-target active:scale-95">
+                      <Icon name="play" className="w-4 h-4" />{t('voicePlay')}
+                    </button>
+                  )}
+                  {voiceStatus==='speaking' && (
+                    <>
+                      <button onClick={pauseVoice} aria-label="Pause voice"
+                        class="flex-1 py-3 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-2xl text-xs flex items-center justify-center gap-2 transition-all touch-target active:scale-95">
+                        <Icon name="pause" className="w-4 h-4" />{t('voicePause')}
+                      </button>
+                      <button onClick={stopVoice} aria-label="Stop voice"
+                        class="py-3 px-4 bg-red-900/40 hover:bg-red-900/60 border border-red-800/40 text-red-300 font-bold rounded-2xl text-xs flex items-center gap-1.5 transition-all touch-target active:scale-95">
+                        <Icon name="stop" className="w-4 h-4" />{t('voiceStop')}
+                      </button>
+                    </>
+                  )}
+                  {voiceStatus==='paused' && (
+                    <>
+                      <button onClick={playVoice} aria-label="Resume voice"
+                        class="flex-1 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-2xl text-xs flex items-center justify-center gap-2 transition-all touch-target active:scale-95">
+                        <Icon name="play" className="w-4 h-4" />{t('voiceResume')}
+                      </button>
+                      <button onClick={stopVoice} aria-label="Stop voice"
+                        class="py-3 px-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-bold rounded-2xl text-xs flex items-center gap-1.5 transition-all touch-target active:scale-95">
+                        <Icon name="stop" className="w-4 h-4" />{t('voiceStop')}
+                      </button>
+                    </>
+                  )}
+                </div>
+
+                {/* Replay */}
+                {voiceStatus==='idle' && hasSpoken && (
+                  <button onClick={playVoice} aria-label="Replay voice alert"
+                    class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-400 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all touch-target border border-slate-700">
+                    <Icon name="refresh" className="w-3 h-3" />{t('voiceReplay')}
+                  </button>
+                )}
+
+                {/* Transcript */}
+                <div class="bg-slate-900/80 rounded-2xl p-3.5 border border-slate-800/50">
+                  <div class="text-[9px] font-black text-amber-400/80 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                    <Icon name="mic" className="w-3 h-3" />{t('transcript')}
+                  </div>
+                  <p class={`text-[10px] leading-relaxed font-medium break-words transition-all duration-300 p-2 rounded-xl ${voiceStatus==='speaking'?'text-amber-50 bg-amber-900/30 border border-amber-800/50 shadow-inner shadow-amber-900/20':'text-slate-400 border border-transparent'}`}>
+                    {voiceText()}
+                  </p>
+                </div>
+
+                {/* Language pills */}
+                <div class="flex justify-center gap-2 pb-2">
+                  <span class={`text-[9px] font-bold px-3 py-1 rounded-full transition-all ${lang==='en'?'bg-blue-600 text-white':'bg-slate-800 text-slate-500'}`}>English</span>
+                  <span class={`text-[9px] font-bold px-3 py-1 rounded-full transition-all font-ta ${lang==='ta'?'bg-emerald-600 text-white':'bg-slate-800 text-slate-500'}`}>தமிழ்</span>
+                </div>
+              </div>
+            )}
+
+            {/* Home indicator */}
+            <div class="py-3 flex justify-center bg-slate-950 flex-shrink-0">
+              <div class="w-24 h-1 bg-slate-800 rounded-full"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+
+    /* ============================================================
+       MAIN RENDER
+    ============================================================ */
+    return (
+      <div class={`min-h-screen pb-24 no-overflow ${lang==='ta'?'font-ta':'font-en'}`}>
+        
+        {/* ======== SPLASH SCREEN ======== */}
+        {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
+
+        {/* ======== HEADER ======== */}
+        <header class="glass border-b border-slate-200/80 sticky top-0 z-50 shadow-[0_2px_20px_rgba(0,0,0,0.05)]">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3 flex-wrap">
+            <div class="flex items-center gap-3 min-w-0">
+              <span class="text-3xl flex-shrink-0">🌾</span>
+              <div class="min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <h1 class="text-xl sm:text-2xl font-black text-emerald-900 tracking-tight leading-none">
+                    UZHAVAI <span class="text-emerald-600 font-ta text-lg sm:text-xl">உழவை</span>
+                  </h1>
+                  <span class="text-[9px] font-bold px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full border border-emerald-200 flex-shrink-0">{t('badge')}</span>
+                </div>
+                <p class="text-[10px] text-slate-500 font-medium leading-tight mt-0.5 hidden sm:block break-words">{t('tagline')}</p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
+              <div class="hidden sm:flex items-center gap-1.5 text-[10px] font-bold px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700">
+                <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>{t('espLive')}
+              </div>
+              <div class="flex items-center gap-1.5 text-[10px] sm:text-[11px] font-black px-2.5 sm:px-3 py-1.5 rounded-full bg-orange-50 border border-orange-200 text-orange-800">
+                📅 {t('day')} {currentDay}
+              </div>
+              <div class="flex bg-slate-100 rounded-xl border border-slate-200 p-0.5 gap-0.5">
+                {['en','ta'].map(l => (
+                  <button key={l} onClick={() => setLang(l)}
+                    aria-label={l==='en'?'Switch to English':'தமிழுக்கு மாற்று'}
+                    class={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold transition-all touch-target ${lang===l?'bg-white text-emerald-800 shadow-sm':'text-slate-500 hover:text-slate-700'}`}>
+                    {l==='en' ? 'EN' : 'தமிழ்'}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* ======== MAIN ======== */}
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 py-5 sm:py-8">
+
+          {/*
+            LAYOUT STRATEGY:
+            - HERO is rendered ABOVE the columns on mobile (md:hidden),
+              and INSIDE the left column on desktop (hidden md:block).
+            - Right column (Simulator + Phone) has order-1 on mobile → appears first.
+            - Left column has order-2 on mobile → appears second.
+            - This achieves the mobile order: Hero → Sim → Phone → Impact → Overview → Zones…
+          */}
+
+          {/* HERO — Mobile position (above columns) */}
+          <div class="mb-5 sm:mb-6 md:hidden">
+            {renderHero()}
+          </div>
+
+          <div class="flex flex-col md:flex-row gap-5 sm:gap-6 lg:gap-8">
+
+            {/* ====== LEFT COLUMN ====== */}
+            <div class="w-full md:w-[60%] space-y-5 sm:space-y-6 order-2 md:order-1">
+
+              {/* HERO — Desktop position (inside left col) */}
+              <div class="hidden md:block">
+                {renderHero()}
+              </div>
+
+              {renderImpact()}
+              {renderOverview()}
+              {renderPriority()}
+              {renderZones()}
+              {renderWhyHW()}
+              {renderImpactStats()}
+              {renderHistory()}
+            </div>
+
+            {/* ====== RIGHT COLUMN ====== */}
+            <div class="w-full md:w-[40%] space-y-5 sm:space-y-6 order-1 md:order-2">
+              {renderSimulator()}
+              {renderPhone()}
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
